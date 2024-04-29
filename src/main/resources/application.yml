@@ -1,0 +1,8 @@
+spring:
+  mvc:
+    enabled: true
+    converters:
+      preferred-json-mapper: fastjson
+  fastjson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    charset: UTF-8

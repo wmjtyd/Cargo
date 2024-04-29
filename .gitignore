@@ -1,0 +1,4 @@
+src/testdata/
+out/
+target/
+frontend/node_modules/

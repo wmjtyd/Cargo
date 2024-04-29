@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<solver xmlns="https://www.optaplanner.org/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://www.optaplanner.org/xsd/solver https://www.optaplanner.org/xsd/solver/solver.xsd">
+    <!-- To slowly prove there are no bugs in this code -->
+    <environmentMode>FULL_ASSERT</environmentMode>
+    <!-- To solve faster by saturating multiple CPU cores -->
+    <!--<moveThreadCount>AUTO</moveThreadCount>-->
+
+    <!-- 模型配置 -->
+    <solutionClass>cargo.schedule.Schedule</solutionClass>
+    <entityClass>cargo.model.Request</entityClass>
+
+    <!-- 得分计算器 -->
+    <scoreDirectorFactory>
+        <easyScoreCalculatorClass>cargo.schedule.Score</easyScoreCalculatorClass>
+    </scoreDirectorFactory>
+
+    <!-- 算法运行时长 -->
+    <termination>
+        <secondsSpentLimit>30</secondsSpentLimit>
+    </termination>
+
+    <!-- 找到一个初始化方案 -->
+    <constructionHeuristic>
+        <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
+    </constructionHeuristic>
+
+    <localSearch>
+        <unionMoveSelector>
+            <changeMoveSelector>
+                <cacheType>STEP</cacheType>
+                <selectionOrder>SHUFFLED</selectionOrder>
+            </changeMoveSelector>
+            <changeMoveSelector>
+                <entitySelector id="entitySelector1">
+                    <entityClass>cargo.model.Request</entityClass>
+                </entitySelector>
+                <valueSelector variableName="previous">
+                    <nearbySelection>
+                        <originEntitySelector mimicSelectorRef="entitySelector1"/>
+                        <nearbyDistanceMeterClass>cargo.schedule.Nearby</nearbyDistanceMeterClass>
+                        <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+                    </nearbySelection>
+                </valueSelector>
+            </changeMoveSelector>
+            <swapMoveSelector>
+                <entitySelector id="entitySelector2">
+                    <entityClass>cargo.model.Request</entityClass>
+                </entitySelector>
+                <secondaryEntitySelector>
+                    <entityClass>cargo.model.Request</entityClass>
+                    <nearbySelection>
+                        <originEntitySelector mimicSelectorRef="entitySelector2"/>
+                        <nearbyDistanceMeterClass>cargo.schedule.Nearby</nearbyDistanceMeterClass>
+                        <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+                    </nearbySelection>
+                </secondaryEntitySelector>
+            </swapMoveSelector>
+            <tailChainSwapMoveSelector>
+                <entitySelector id="entitySelector3"/>
+                <valueSelector variableName="previous">
+                    <nearbySelection>
+                        <originEntitySelector mimicSelectorRef="entitySelector3"/>
+                        <nearbyDistanceMeterClass>cargo.schedule.Nearby</nearbyDistanceMeterClass>
+                        <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+                    </nearbySelection>
+                </valueSelector>
+            </tailChainSwapMoveSelector>
+            <subChainChangeMoveSelector>
+                <entityClass>cargo.model.Request</entityClass>
+                <subChainSelector>
+                    <valueSelector variableName="previous"/>
+                    <maximumSubChainSize>50</maximumSubChainSize>
+                </subChainSelector>
+                <valueSelector variableName="previous"/>
+                <selectReversingMoveToo>true</selectReversingMoveToo>
+            </subChainChangeMoveSelector>
+            <subChainSwapMoveSelector>
+                <entityClass>cargo.model.Request</entityClass>
+                <subChainSelector>
+                    <valueSelector variableName="previous"></valueSelector>
+                    <maximumSubChainSize>50</maximumSubChainSize>
+                </subChainSelector>
+                <selectReversingMoveToo>true</selectReversingMoveToo>
+            </subChainSwapMoveSelector>
+        </unionMoveSelector>
+
+        <!--        <acceptor>-->
+        <!--            <entityTabuSize>7</entityTabuSize>-->
+        <!--        </acceptor>-->
+        <!--        <forager>-->
+        <!--            <acceptedCountLimit>1000</acceptedCountLimit>-->
+        <!--        </forager>-->
+
+        <!--        <acceptor>-->
+        <!--            <entityTabuSize>7</entityTabuSize>-->
+        <!--            <simulatedAnnealingStartingTemperature>1000hard/1000medium/1000soft</simulatedAnnealingStartingTemperature>-->
+        <!--        </acceptor>-->
+        <!--        <forager>-->
+        <!--            <acceptedCountLimit>100</acceptedCountLimit>-->
+        <!--        </forager>-->
+
+        <acceptor>
+            <entityTabuSize>7</entityTabuSize>
+        </acceptor>
+        <forager>
+            <acceptedCountLimit>1000</acceptedCountLimit>
+            <finalistPodiumType>STRATEGIC_OSCILLATION</finalistPodiumType>
+        </forager>
+
+    </localSearch>
+</solver>
