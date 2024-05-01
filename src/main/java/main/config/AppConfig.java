@@ -12,6 +12,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableScheduling
 public class AppConfig {
     @Bean
+    public SolverFactory vehicleRoutingSolverFactory() {
+        return SolverFactory.createFromXmlResource("vehicleRoutingSolverConfig.xml");
+    }
+    @Bean
     public SolverFactory pathSolverFactory() {
         return SolverFactory.createFromXmlResource("path.xml");
     }
