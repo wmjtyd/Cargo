@@ -1,15 +1,32 @@
 <template>
-  <el-card>
-    <svg id="map" width="1100" height="350">
-    </svg>
-  </el-card>
+  <div id="map" style="width: 1400px; height: 500px;"></div>
 </template>
 
 <script>
-import * as d3 from "d3";
+import { Loader } from '@googlemaps/js-api-loader';
 
 export default {
+  data() {
+    return {
+      googleMap: null
+    };
+  },
+  mounted() {
+    this.loadMap();
+  },
   methods: {
+    loadMap() {
+      const loader = new Loader({
+        apiKey: 'YOUR_API_KEY', // 替换为您的 Google Maps API 密钥
+        version: 'weekly'
+      });
+      loader.load().then(() => {
+        this.googleMap = new google.maps.Map(document.getElementById('map'), {
+          center: { lat: 42.3363567, lng: -87.7470571 }, // 可以根据需要调整地图中心
+          zoom: 8
+        });
+      });
+    },
     getCarColor(carId) {
       const colors = [
         '#F9D371', '#3DB2FF', 'green', '#6E85B2', '#F47340',
@@ -21,48 +38,53 @@ export default {
       return colors[carId % colors.length];
     },
     plot(data) {
-      // 打印接收到的数据
-      console.log("Received data for plotting:", data);
-      const plans = data.plans;  // 正确访问 plans 而非 plan
-      function realX(location) {
-        return location["latitude"] * 6 + 10;
-      }
-      function realY(location) {
-        return location["longitude"] * 3 + 10;
-      }
-      const parent = d3.select("#map");
-      parent.selectAll("*").remove();
-      plans.forEach((route, index) => {  // 正确遍历 plans 数组
-        const carColor = this.getCarColor(route.car.carId);
-        const carStandstill = route.car;
-        const requestStandstills = route.path;
-        const dots = [carStandstill].concat(requestStandstills);
+      data.plans.forEach(plan => {
+        const carColor = this.getCarColor(plan.car.carId);
+        const routePath = plan.path.map(p => ({ lat: p.location.latitude, lng: p.location.longitude }));
+        const carStandstill = { lat: plan.car.location.latitude, lng: plan.car.location.longitude };
 
-        const lineGenerator = d3.line()
-          .x(dot => realX(dot.location))
-          .y(dot => realY(dot.location));
-        const pathString = lineGenerator(dots);
+        // 将车辆初始位置与路径点连接
+        const fullPath = [carStandstill, ...routePath]; // 完整路径包括起始点和路径点
 
-        parent.append("path")
-          .attr("d", pathString)
-          .attr("fill", "none")
-          .attr("stroke", carColor)
-          .attr("stroke-width", 2)
-          .attr("stroke-dasharray", "5,5");
+        // 创建多个Polyline，每个只连接相邻的两点
+        for (let i = 0; i < fullPath.length - 1; i++) {
+          const segment = new google.maps.Polyline({
+            path: [fullPath[i], fullPath[i + 1]],
+            geodesic: true,
+            strokeColor: carColor,
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+          });
+          segment.setMap(this.googleMap);
+        }
 
-        dots.forEach(dot => {
-          const editor = parent.append("circle")
-            .attr("r", 4)
-            .attr("cx", realX(dot.location))
-            .attr("cy", realY(dot.location))
-            .attr("fill", carColor);
-          if (dot.carId) {
-            editor.attr("stroke-width", 2)
-              .attr("stroke", "red");
-          } else if (!dot.orderId) {
-            editor.attr("stroke-width", 2)
-              .attr("stroke", "black");
+        // 特别标记车辆的初始位置，使用红色箭头标记
+        new google.maps.Marker({
+          position: carStandstill,
+          map: this.googleMap,
+          icon: {
+            path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+            scale: 5,
+            fillColor: 'red', // 红色填充
+            fillOpacity: 1,
+            strokeColor: '#000',  // 黑色描边
+            strokeWeight: 2
           }
+        });
+
+        // 标记路线上的其他点
+        routePath.forEach(loc => {
+          new google.maps.Marker({
+            position: loc,
+            map: this.googleMap,
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 4,
+              fillColor: carColor,
+              fillOpacity: 1,
+              strokeWeight: 1
+            }
+          });
         });
       });
     }

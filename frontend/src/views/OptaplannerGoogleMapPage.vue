@@ -5,7 +5,9 @@
     </el-header>
     <el-main>
       <div class="display-area">
-        <OptaplannerGoogleMap ref="optaplannerGoogleMap" />
+        <div style="flex-grow: 1; height: 500px;"> <!-- Adjust the height as needed -->
+          <OptaplannerGoogleMap ref="optaplannerGoogleMap" />
+        </div>
         <el-card style="max-width: 300px; min-width: 300px; max-height: 396px;">
           <el-input
             type="textarea"
@@ -16,7 +18,6 @@
           </el-input>
         </el-card>
       </div>
-
       <el-divider></el-divider>
       <div style="text-align: center;">
         <Status :stage="stage"></Status>
@@ -179,4 +180,5 @@ export default {
 .display-area div {
   margin: 0px 10px;
 }
+
 </style>
