@@ -2,6 +2,8 @@ package main.controller;
 
 import cargo.schedule.Schedule;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import main.util.Response;
 import org.optaplanner.core.api.solver.Solver;
@@ -16,6 +18,8 @@ import vehiclerouting.bootstrap.DemoDataGenerator;
 import vehiclerouting.domain.*;
 import vehiclerouting.domain.geo.DistanceCalculator;
 import vehiclerouting.domain.geo.EuclideanDistanceCalculator;
+import vehiclerouting.schedule.Solution;
+import vehiclerouting.schedule.VehicleRoutingConverter;
 import vehiclerouting.schedule.VehicleRoutingListener;
 
 import java.util.List;
@@ -34,6 +38,8 @@ public class VehicleRoutingController {
     private TaskRepository taskRepository;
 
     private DistanceCalculator distanceCalculator;
+
+    ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
     public VehicleRoutingController(
@@ -82,8 +88,15 @@ public class VehicleRoutingController {
         if (solution == null) {
             return Response.msg(false, "Solution is still processing", null);
         }
-        log.info("uuid is: {}, VehicleRoutingSolution: {}", id, solution);
-        return Response.msg(true, "Solution found", solution.getVehicleList());
+        String vehicleList = null;
+        try {
+            vehicleList = mapper.writeValueAsString(solution.getVehicleList());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+//        log.info("uuid is: {}, vehicleList: {}", id, vehicleList);
+        Solution resp = VehicleRoutingConverter.convertToSolution(solution.getVehicleList());
+        return Response.msg(true, "Solution found", resp);
     }
 
     @RequestMapping(value = "/solve_test/routing", method = RequestMethod.POST)
@@ -117,7 +130,7 @@ public class VehicleRoutingController {
 
         // 转换 Storage 到 Depot
         List<Depot> depotList = schedule.getStorageList().stream()
-                .map(storage -> new Depot(sequence.incrementAndGet()+"",
+                .map(storage -> new Depot(storage.getStorageId()+"",
                         new Location(sequence.incrementAndGet(), storage.getLocation().getLatitude(), storage.getLocation().getLongitude())))
                 .collect(Collectors.toList());
 
@@ -132,7 +145,8 @@ public class VehicleRoutingController {
         List<Vehicle> vehicleList = schedule.getCarList().stream()
                 .map(car -> new Vehicle(car.getCarId()+"", (int) car.getCapacity(),
                         new Depot(sequence.incrementAndGet()+"",
-                                new Location(sequence.incrementAndGet(), car.getLocation().getLatitude(), car.getLocation().getLongitude()))
+                                new Location(sequence.incrementAndGet(), schedule.getStorageList().get(0).getLocation().getLatitude(),
+                                        schedule.getStorageList().get(0).getLocation().getLongitude()))
                 ))
                 .collect(Collectors.toList());
 

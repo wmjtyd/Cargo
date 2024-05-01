@@ -42,6 +42,16 @@ export default {
           name: "OpenLayers Map",
           introduction: "使用 OpenLayers 显示 OpenStreetMap 地图的示例页面。",
           url: "/openlayersMap"
+        },
+        {
+          name: "Vehicle Routing Map",
+          introduction: "optaplanner example:Vehicle Routing Find the most efficient routes for a fleet of vehicles.",
+          url: "/vehicleroutingMap"
+        },
+        {
+          name: "Vehicle Routing Google Map",
+          introduction: "optaplanner example:Vehicle Routing Find the most efficient routes for a fleet of vehicles.",
+          url: "/optaplannerGoogleMap"
         }
       ]
     }

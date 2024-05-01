@@ -15,7 +15,7 @@ public class VehicleRoutingConstraintProvider implements ConstraintProvider {
         return new Constraint[] {
                 vehicleCapacity(factory),
                 distanceToPreviousStandstill(factory),
-                distanceFromLastCustomerToDepot(factory),
+//                distanceFromLastCustomerToDepot(factory),
 //                arrivalAfterDueTime(factory)
         };
     }

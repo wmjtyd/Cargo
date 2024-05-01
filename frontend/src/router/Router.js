@@ -5,6 +5,8 @@ import MainPage from "@/views/MainPage.vue";
 import PathMapPage from "@/views/PathMapPage.vue";
 import CargoMapPage from "@/views/CargoMapPage.vue";
 import OpenLayersMapPage from "@/views/OpenLayersMapPage.vue";
+import VehicleRoutingMapPage from "@/views/VehicleRoutingMapPage.vue";
+import OptaplannerGoogleMapPage from "@/views/OptaplannerGoogleMapPage.vue";
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -21,6 +23,14 @@ const router = createRouter({
     {
       path: '/openlayersMap',
       component: OpenLayersMapPage
+    },
+    {
+      path: '/vehicleroutingMap',
+      component: VehicleRoutingMapPage
+    },
+    {
+      path: '/optaplannerGoogleMap',
+      component: OptaplannerGoogleMapPage
     }
   ]
 })
