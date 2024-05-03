@@ -144,8 +144,9 @@ public class VehicleRoutingController {
         // 转换 Car 到 Vehicle
         List<Vehicle> vehicleList = schedule.getCarList().stream()
                 .map(car -> new Vehicle(car.getCarId()+"", (int) car.getCapacity(),
-                        new Depot(sequence.incrementAndGet()+"",
-                                new Location(sequence.incrementAndGet(), schedule.getStorageList().get(0).getLocation().getLatitude(),
+                        new Depot(schedule.getStorageList().get(0).getStorageId()+"",
+                                new Location(sequence.incrementAndGet(),
+                                        schedule.getStorageList().get(0).getLocation().getLatitude(),
                                         schedule.getStorageList().get(0).getLocation().getLongitude()))
                 ))
                 .collect(Collectors.toList());
